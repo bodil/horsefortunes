@@ -182,6 +182,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
   function getSingle(req: ExpressServerRequest, res: ExpressServerResponse): void {
     randomTweet((err, tweet) => {
       res.type("text/plain; charset=utf-8");
+      res.setHeader("Access-Control-Allow-Origin", "*");
       res.send(tweet + "\n");
     });
   }
