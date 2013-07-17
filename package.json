@@ -1,0 +1,23 @@
+{
+  "name": "horsefortunes",
+  "version": "0.1.0",
+  "dependencies": {
+    "mtwitter": "~1.5.2",
+    "underscore": "~1.5.1",
+    "redis": "~0.8.4",
+    "async": "~0.2.9",
+    "express": "~3.3.4",
+    "parse-redis-url": "0.0.1"
+  },
+  "devDependencies": {
+    "typescript": "~0.9.0-1"
+  },
+  "engines": {
+    "node": "0.10.x",
+    "npm": "1.2.x"
+  },
+  "scripts": {
+    "postinstall": "tsc --target es5 --module node feed.ts",
+    "start": "node feed.js"
+  }
+}
