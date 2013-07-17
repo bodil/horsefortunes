@@ -136,15 +136,17 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     });
   }
 
-  function randomTweet(cb: (err, res) => void): void {
+  function randomTweet(cb: (err, res: string, index: number) => void): void {
     client.llen("horse:text", (err, len) => {
-      if (err) { cb(err, null); return; }
+      if (err) { cb(err, null, null); return; }
       var index = Math.floor(Math.random() * len);
-      client.lindex("horse:text", index, cb);
+      client.lindex("horse:text", index, (err, res) => {
+        cb(err, res, index);
+      });
     });
   }
 
-  function allTweets(cb: (err, res) => void): void {
+  function allTweets(cb: (err, res: string[]) => void): void {
     client.lrange("horse:text", 0, -1, cb);
   }
 
@@ -158,11 +160,22 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
   });
 
   function getPage(req: ExpressServerRequest, res: ExpressServerResponse): void {
-    randomTweet((err, tweet) => {
+    randomTweet((err, tweet, index) => {
+      res.render("index.hbs", {
+        layout: false,
+        tweet: tweet,
+        index: index
+      });
+    });
+  }
+
+  function getByIndex(req: ExpressServerRequest, res: ExpressServerResponse): void {
+    var index = parseInt(req.params[0], 10);
+    client.lindex("horse:text", index, (err, tweet) => {
       res.render("index.hbs", {
         layout: false,
         tweet: tweet
-      })
+      });
     });
   }
 
@@ -188,6 +201,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
       .use(express.static(__dirname + "/static"))
       .engine("hbs", ehb())
       .get("/", getPage)
+      .get(/^\/(\d+)/, getByIndex)
       .get("/get", getSingle)
       .get("/fortune", getFortuneFile);
 

@@ -76,3 +76,11 @@ a {
     text-decoration: none;
     text-shadow: 2px 2px 8px #888;
 }
+
+.permalink {
+    display: block;
+    font-size: 10pt;
+    line-height: 1em;
+    text-align: right;
+    margin-right: -7em;
+}
