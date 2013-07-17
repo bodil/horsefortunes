@@ -5,6 +5,7 @@ html {
 body {
     background: url("/horse.jpg") no-repeat 50%;
     background-size: cover;
+    background-attachment: fixed;
     margin: 0;
     height: 100%;
     position: relative;
@@ -25,6 +26,7 @@ body {
     vertical-align: middle;
     width: 100%;
     margin: 0 auto;
+    padding: 3em 0;
 }
 
 .quote p {
@@ -46,7 +48,7 @@ body {
 }
 
 ul {
-    position: absolute;
+    position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
