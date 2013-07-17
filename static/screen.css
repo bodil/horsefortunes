@@ -37,6 +37,14 @@ body {
     border-radius: 0.4em;
 }
 
+.moar {
+    margin-top: -2em;
+    margin-right: 1em;
+    display: block;
+    text-align: right;
+    font-size: 18pt;
+}
+
 ul {
     position: absolute;
     bottom: 0;
@@ -61,4 +69,10 @@ ul li:first-child {
 
 a {
     color: #444;
+}
+
+.moar a {
+    color: #666;
+    text-decoration: none;
+    text-shadow: 2px 2px 8px #888;
 }
