@@ -10,7 +10,9 @@ import mtwitter = require("mtwitter");
 import _ = require("underscore");
 import async = require("async");
 import express = require("express");
-import parseRedisUrl = require("parse-redis-url")
+import parseRedisUrl = require("parse-redis-url");
+
+var ehb = require("express3-handlebars");
 
 interface Tweet {
   id: number;
@@ -155,21 +157,38 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     }, 10 * 60 * 1000);
   });
 
+  function getPage(req: ExpressServerRequest, res: ExpressServerResponse): void {
+    randomTweet((err, tweet) => {
+      res.render("index.hbs", {
+        layout: false,
+        tweet: tweet
+      })
+    });
+  }
+
   function getSingle(req: ExpressServerRequest, res: ExpressServerResponse): void {
     randomTweet((err, tweet) => {
+      res.type("text/plain; charset=utf-8");
       res.send(tweet + "\n");
     });
   }
 
   function getFortuneFile(req: ExpressServerRequest, res: ExpressServerResponse): void {
     allTweets((err, tweets) => {
+      res.type("application/octet-stream");
+      res.attachment("horse_ebooks");
       res.send(tweets.map((i) => (i + "\n%\n")).join(""));
     });
   }
 
   var app = express()
       .use(express.logger())
-      .get("/", getSingle)
+      .use(express.compress())
+      .use(express.errorHandler())
+      .use(express.static(__dirname + "/static"))
+      .engine("hbs", ehb())
+      .get("/", getPage)
+      .get("/get", getSingle)
       .get("/fortune", getFortuneFile);
 
   var port = process.env.PORT || 1337;

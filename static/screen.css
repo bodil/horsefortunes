@@ -1,0 +1,64 @@
+html {
+    height: 100%;
+}
+
+body {
+    background: url("/horse.jpg") no-repeat 50%;
+    background-size: cover;
+    margin: 0;
+    height: 100%;
+    position: relative;
+    font-family: serif;
+    text-align: center;
+}
+
+.container {
+    display: table;
+    height: 100%;
+    overflow: hidden;
+    width: 70%;
+    margin-left: 15%;
+}
+
+.quote {
+    display: table-cell;
+    vertical-align: middle;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.quote p {
+    font-size: 4em;
+    font-style: italic;
+    color: #666;
+    text-shadow: 4px 4px 16px #888;
+    background-color: rgba(255, 255, 255, 0.4);
+    padding: 0.5em 2em;
+    border-radius: 0.4em;
+}
+
+ul {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-family: sans-serif;
+    background-color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+    padding: 2pt 0;
+}
+
+ul li {
+    list-style: none;
+    display: inline;
+    padding: 0 1em;
+    border-left: 2px groove white;
+}
+
+ul li:first-child {
+    border: 0;
+}
+
+a {
+    color: #444;
+}
