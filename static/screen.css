@@ -109,7 +109,7 @@ a {
     }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 800px) {
     body {
         font-size: 2em;
     }
