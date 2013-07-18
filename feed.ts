@@ -136,13 +136,18 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     });
   }
 
+  function getTweet(index: number, cb: (err, res: string, index: number) => void): void {
+    client.lindex("horse:text", index, (err, res) => {
+      res = res.replace(/http:\/\/t.co\/\w+/g, "");
+      cb(err, res, index);
+    });
+  }
+
   function randomTweet(cb: (err, res: string, index: number) => void): void {
     client.llen("horse:text", (err, len) => {
       if (err) { cb(err, null, null); return; }
       var index = Math.floor(Math.random() * len);
-      client.lindex("horse:text", index, (err, res) => {
-        cb(err, res, index);
-      });
+      getTweet(index, cb);
     });
   }
 
@@ -171,7 +176,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
 
   function getByIndex(req: ExpressServerRequest, res: ExpressServerResponse): void {
     var index = parseInt(req.params[0], 10);
-    client.lindex("horse:text", index, (err, tweet) => {
+    getTweet(index, (err, tweet, index) => {
       res.render("index.hbs", {
         layout: false,
         tweet: tweet
