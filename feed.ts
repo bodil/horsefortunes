@@ -4,6 +4,8 @@
 ///<reference path="mtwitter.d.ts" />
 ///<reference path="underscore.d.ts" />
 ///<reference path="express.d.ts" />
+///<reference path="ent.d.ts" />
+
 
 import redis = require("redis");
 import mtwitter = require("mtwitter");
@@ -11,6 +13,7 @@ import _ = require("underscore");
 import async = require("async");
 import express = require("express");
 import parseRedisUrl = require("parse-redis-url");
+import ent = require("ent");
 
 var ehb = require("express3-handlebars");
 
@@ -179,7 +182,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     getTweet(index, (err, tweet, index) => {
       res.render("index.hbs", {
         layout: false,
-        tweet: tweet
+        tweet: ent.decode(tweet)
       });
     });
   }
@@ -188,7 +191,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     randomTweet((err, tweet) => {
       res.type("text/plain; charset=utf-8");
       res.setHeader("Access-Control-Allow-Origin", "*");
-      res.send(tweet + "\n");
+      res.send(ent.decode(tweet) + "\n");
     });
   }
 
@@ -196,7 +199,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     allTweets((err, tweets) => {
       res.type("application/octet-stream");
       res.attachment("horse_ebooks");
-      res.send(tweets.map((i) => (i + "\n%\n")).join(""));
+      res.send(tweets.map((i) => (ent.decode(i) + "\n%\n")).join(""));
     });
   }
 
