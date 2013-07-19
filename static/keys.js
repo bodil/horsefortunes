@@ -1,3 +1,5 @@
+/*global Hammer, window */
+
 (function() {
   function reload() {
     document.location.pathname = "/";
