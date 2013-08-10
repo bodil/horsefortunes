@@ -17,7 +17,7 @@
     "npm": "1.2.x"
   },
   "scripts": {
-    "postinstall": "tsc --target es5 --module node feed.ts",
+    "postinstall": "tsc --target es5 --module commonjs feed.ts",
     "start": "node feed.js"
   }
 }
