@@ -141,7 +141,7 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
 
   function getTweet(index: number, cb: (err, res: string, index: number) => void): void {
     client.lindex("horse:text", index, (err, res) => {
-      res = res.replace(/http:\/\/t.co\/\w+/g, "");
+      if (res && !err) res = res.replace(/http:\/\/t.co\/\w+/g, "");
       cb(err, res, index);
     });
   }
@@ -154,8 +154,8 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     });
   }
 
-  function allTweets(cb: (err, res: string[]) => void): void {
-    client.lrange("horse:text", 0, -1, cb);
+  function allTweets(from: number, cb: (err, res: string[]) => void): void {
+    client.lrange("horse:text", 0, from, cb);
   }
 
   fillTo(3000, (err) => {
@@ -167,9 +167,19 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
     }, 10 * 60 * 1000);
   });
 
+  function error(err: any, res: ExpressServerResponse): void {
+    if (err) {
+      console.error(err);
+      res.send(500, "<h1>500 Redis behaving like MongoDB</h1>\n");
+    } else {
+      res.send(404, "<h1>404 No such horse_ebooks</h1>\n");
+    }
+  }
+
   function getPage(req: ExpressServerRequest, res: ExpressServerResponse): void {
     randomTweet((err, tweet, index) => {
-      res.render("index.hbs", {
+      if (err || !tweet) error(err, res);
+      else res.render("index.hbs", {
         layout: false,
         tweet: tweet,
         index: index
@@ -180,7 +190,8 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
   function getByIndex(req: ExpressServerRequest, res: ExpressServerResponse): void {
     var index = parseInt(req.params[0], 10);
     getTweet(index, (err, tweet, index) => {
-      res.render("index.hbs", {
+      if (err || !tweet) error(err, res);
+      else res.render("index.hbs", {
         layout: false,
         tweet: ent.decode(tweet)
       });
@@ -188,18 +199,39 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
   }
 
   function getSingle(req: ExpressServerRequest, res: ExpressServerResponse): void {
-    randomTweet((err, tweet) => {
-      res.type("text/plain; charset=utf-8");
-      res.setHeader("Access-Control-Allow-Origin", "*");
-      res.send(ent.decode(tweet) + "\n");
-    });
+    var index = req.params[0] ? parseInt(req.params[0], 10) : null,
+    cb = (err, tweet) => {
+      if (err || !tweet) error(err, res);
+      else {
+        res.type("text/plain; charset=utf-8");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.send(ent.decode(tweet) + "\n");
+      }
+    };
+    if (index) getTweet(index, cb);
+    else randomTweet(cb);
   }
 
   function getFortuneFile(req: ExpressServerRequest, res: ExpressServerResponse): void {
-    allTweets((err, tweets) => {
-      res.type("application/octet-stream");
-      res.attachment("horse_ebooks");
-      res.send(tweets.map((i) => (ent.decode(i) + "\n%\n")).join(""));
+    var index = req.params[0] ? parseInt(req.params[0], 10) : -1;
+    allTweets(index, (err, tweets) => {
+      if (err || !tweets) error(err, res);
+      else {
+        res.type("application/octet-stream");
+        res.attachment("horse_ebooks");
+        res.send(tweets.map((i) => (ent.decode(i) + "\n%\n")).join(""));
+      }
+    });
+  }
+
+  function getCount(req: ExpressServerRequest, res: ExpressServerResponse): void {
+    tweetCount((err, length) => {
+      if (err) error(err, res);
+      else {
+        res.type("text/plain; charset=utf-8");
+        res.setHeader("Access-Control-Allow-Origin", "*");
+        res.send("" + length);
+      }
     });
   }
 
@@ -211,8 +243,11 @@ parseRedisUrl(redis).createClient(redisUrl, (err, client) => {
       .engine("hbs", ehb())
       .get("/", getPage)
       .get(/^\/(\d+)/, getByIndex)
+      .get(/^\/get\/(\d+)/, getSingle)
       .get("/get", getSingle)
-      .get("/fortune", getFortuneFile);
+      .get(/^\/fortune\/(\d+)/, getFortuneFile)
+      .get("/fortune", getFortuneFile)
+      .get("/count", getCount);
 
   var port = process.env.PORT || 1337;
   app.listen(port, () => {
